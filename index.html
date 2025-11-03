@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UK Universities ChatBot</title>
+
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background: #d3e0ea;
+        margin: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+    }
+
+    .chat-wrapper {
+        width: 95%;
+        max-width: 450px;
+        height: 600px;
+        background: #fff;
+        display: flex;
+        flex-direction: column;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 5px 18px rgba(0,0,0,0.2);
+        border: 1px solid #c8d6e5;
+    }
+
+    .chat-header {
+        background: #075E54;
+        color: white;
+        padding: 15px;
+        text-align: center;
+        font-weight: bold;
+        font-size: 18px;
+    }
+
+    #chatBox {
+        flex: 1;
+        overflow-y: auto;
+        padding: 15px;
+        background: #e5ddd5;
+    }
+
+    .message {
+        max-width: 75%;
+        margin: 8px 0;
+        padding: 10px 14px;
+        border-radius: 12px;
+        font-size: 14px;
+        word-wrap: break-word;
+        display: inline-block;
+        line-height: 1.4;
+    }
+
+    .user {
+        background: #dcf8c6;
+        align-self: flex-end;
+        border-bottom-right-radius: 3px;
+    }
+
+    .bot {
+        background: #ffffff;
+        align-self: flex-start;
+        border-bottom-left-radius: 3px;
+    }
+
+    .typing {
+        width: 45px;
+        display: flex;
+        gap: 4px;
+        padding: 6px 12px;
+        background: #fff;
+        border-radius: 12px;
+        margin: 5px 0;
+    }
+
+    .typing span {
+        width: 6px;
+        height: 6px;
+        background: #888;
+        border-radius: 50%;
+        animation: blink 1.4s infinite both;
+    }
+
+    .typing span:nth-child(2) { animation-delay: .2s; }
+    .typing span:nth-child(3) { animation-delay: .4s; }
+
+    @keyframes blink {
+        0%, 100% { opacity: .2; }
+        20% { opacity: 1; }
+    }
+
+    .input-area {
+        display: flex;
+        padding: 10px;
+        background: #f0f0f0;
+        border-top: 1px solid #ccc;
+    }
+
+    input[type="text"] {
+        flex: 1;
+        padding: 10px;
+        border-radius: 20px;
+        border: 1px solid #bbb;
+        font-size: 14px;
+    }
+
+    button {
+        background: #128C7E;
+        color: white;
+        border: none;
+        padding: 10px 14px;
+        border-radius: 50%;
+        margin-left: 8px;
+        cursor: pointer;
+    }
+
+    button:hover {
+        background: #25D366;
+    }
+</style>
+</head>
+
+<body>
+
+<div class="chat-wrapper">
+    <div class="chat-header">UK Universities ChatBot</div>
+    <div id="chatBox"></div>
+
+    <div class="input-area">
+        <input type="text" id="userInput" placeholder="Ask about Oxford, rankings, courses...">
+        <button id="sendBtn">➤</button>
+    </div>
+</div>
+
+<script>
+const universities = [
+    {
+        name: "University of Oxford",
+        ranking: "QS World Ranking: #3",
+        address: "Oxford, OX1 2JD, UK",
+        tuition: "£27,000 per year (International)",
+        intake: "October 2025",
+        subjects: ["Computer Science", "Engineering", "Medicine", "Business", "Law"],
+        programs: ["Undergraduate", "Masters", "PhD"]
+    },
+    {
+        name: "University of Cambridge",
+        ranking: "QS World Ranking: #2",
+        address: "Cambridge, CB2 1TN, UK",
+        tuition: "£26,000 per year (International)",
+        intake: "October 2025",
+        subjects: ["Mathematics", "Engineering", "Law", "Natural Sciences", "Economics"],
+        programs: ["Undergraduate", "Masters", "PhD"]
+    },
+    {
+        name: "Imperial College London",
+        ranking: "QS World Ranking: #6",
+        address: "South Kensington, London SW7 2AZ, UK",
+        tuition: "£30,000 per year (International)",
+        intake: "September 2025",
+        subjects: ["Engineering", "Medicine", "Computer Science", "Business"],
+        programs: ["Undergraduate", "Masters", "PhD"]
+    }
+];
+
+const chatBox = document.getElementById("chatBox");
+const userInput = document.getElementById("userInput");
+const sendBtn = document.getElementById("sendBtn");
+
+function addMessage(msg, sender) {
+    const div = document.createElement("div");
+    div.className = `message ${sender}`;
+    div.textContent = msg;
+    chatBox.appendChild(div);
+    chatBox.scrollTop = chatBox.scrollHeight;
+}
+
+function showTyping() {
+    const typing = document.createElement("div");
+    typing.className = "typing bot";
+    typing.id = "typingIndicator";
+    typing.innerHTML = "<span></span><span></span><span></span>";
+    chatBox.appendChild(typing);
+    chatBox.scrollTop = chatBox.scrollHeight;
+}
+
+function hideTyping() {
+    const typing = document.getElementById("typingIndicator");
+    if (typing) typing.remove();
+}
+
+function getResponse(text) {
+    text = text.toLowerCase();
+
+    for (let uni of universities) {
+        if (text.includes(uni.name.toLowerCase()) || text.includes(uni.name.split(" ")[1].toLowerCase())) {
+            if (text.includes("ranking")) return `${uni.name} ranking: ${uni.ranking}`;
+            if (text.includes("tuition")) return `${uni.name} tuition fees: ${uni.tuition}`;
+            if (text.includes("intake")) return `${uni.name} next intake: ${uni.intake}`;
+            if (text.includes("subject") || text.includes("course")) return `${uni.name} subjects: ${uni.subjects.join(", ")}`;
+            if (text.includes("program")) return `${uni.name} programs: ${uni.programs.join(", ")}`;
+            if (text.includes("address") || text.includes("location")) return `${uni.name} address: ${uni.address}`;
+
+            return `Here is information about ${uni.name}:
+
+• Ranking: ${uni.ranking}
+• Tuition: ${uni.tuition}
+• Intake: ${uni.intake}
+• Subjects: ${uni.subjects.join(", ")}
+• Programs: ${uni.programs.join(", ")}
+• Address: ${uni.address}`;
+        }
+    }
+
+    return "Try asking:\n• Oxford ranking\n• Cambridge subjects\n• Imperial tuition";
+}
+
+function sendMessage() {
+    const text = userInput.value.trim();
+    if (!text) return;
+
+    addMessage(text, "user");
+    userInput.value = "";
+
+    showTyping();
+
+    setTimeout(() => {
+        hideTyping();
+        addMessage(getResponse(text), "bot");
+    }, 700);
+}
+
+sendBtn.onclick = sendMessage;
+userInput.addEventListener("keydown", (e) => e.key === "Enter" && sendMessage());
+</script>
+
+</body>
+</html>
